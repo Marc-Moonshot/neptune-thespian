@@ -5,16 +5,17 @@
   "license": "ISC",
   "author": "Marc Verdugo",
   "type": "module",
-  "main": ".src/server.ts",
+  "main": "src/server.ts",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "tsx watch ./src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "firebase-admin": "^13.6.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
