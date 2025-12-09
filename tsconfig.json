@@ -28,6 +28,7 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
+    "emitDeclarationOnly": true,
     "allowImportingTsExtensions": true,
     "moduleDetection": "force",
     "skipLibCheck": true
