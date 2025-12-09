@@ -1,16 +1,16 @@
 // firestore init /
 // connect to firestore /
 // schedule caching function /
-// schedule loader function
 // schedule matcher function
 // control data actor function
 
 import db from "admin.ts"
-import scheduleCacher from "cacher.ts"
+import scheduleCacher from "functions/cacher.ts"
 import cors from "cors"
 import express from "express"
 import type { CacheSchedules } from "types/express.js"
 import { pino } from "pino"
+import scheduleMatcher from "functions/matcher.ts"
 
 const port = 3000
 const logger = pino({
@@ -25,7 +25,6 @@ const logger = pino({
 })
 
 const app = express()
-
 app.use(express.json())
 app.use(cors())
 
@@ -42,9 +41,7 @@ app.listen(port, async () => {
         logger.info("cache valid.")
       }
 
-      scheduleCache.schedules.forEach((schedule) => {
-        schedule.device_id
-      })
+      await scheduleMatcher(db, scheduleCache)
     } catch (err) {
       logger.error(err)
     }
