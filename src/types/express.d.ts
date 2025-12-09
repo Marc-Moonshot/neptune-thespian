@@ -1,6 +1,11 @@
 export type Schedule = {
   time: number
   value: number
+  created_at: number
+  created_by_email: string
+  created_by_id: string
+  device_id: number
+  updated_at: number
 }
 
 export type DeviceControlData = {
@@ -10,4 +15,9 @@ export type DeviceControlData = {
   last_contact: string
   live: boolean
   status: string
+}
+
+export type CacheSchedules = {
+  expiry: number
+  schedules: Schedule[]
 }
