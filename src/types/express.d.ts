@@ -21,3 +21,14 @@ export type CacheSchedules = {
   expiry: number
   schedules: Schedule[]
 }
+
+type Log = {
+  deviceId: number
+  field: string
+  lastValue: string | number
+  setValue: string | number
+  date: number
+  username: string
+  userEmail: string
+  userId: string
+}
