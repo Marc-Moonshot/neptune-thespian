@@ -3,10 +3,10 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": {
-      "*": ["src/*"]
-    },
+    // "baseUrl": ".",
+    // "paths": {
+    //   "*": ["src/*"]
+    // },
     // See also https://aka.ms/tsconfig/module
     "module": "NodeNext",
     "target": "ESNext",
@@ -28,8 +28,6 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
-    "emitDeclarationOnly": true,
-    "allowImportingTsExtensions": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   }
