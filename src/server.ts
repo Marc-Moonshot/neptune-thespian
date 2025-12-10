@@ -35,7 +35,8 @@ app.listen(port, async () => {
 
       const matches = await scheduleMatcher(db, scheduleCache)
       if (matches.length) {
-        logger.info(`matches: ${matches}`)
+        console.log(`matches: `)
+        matches.forEach((match) => logger.info(match))
 
         await setter(db, matches)
       }

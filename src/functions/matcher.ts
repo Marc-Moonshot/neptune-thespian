@@ -1,4 +1,4 @@
-import type { DocumentReference, Firestore } from "firebase-admin/firestore"
+import type { Firestore } from "firebase-admin/firestore"
 import type { CacheSchedules, DeviceControlData } from "types/express.js"
 import logger from "logger.ts"
 
@@ -14,10 +14,10 @@ export default async function scheduleMatcher(
     const scheduleMinute = Math.floor(scheduleMs / 60_000) * 60_000
     const minuteNow = Math.floor(Date.now() / 60_000) * 60_000
 
-    // logger.info({
-    //   minuteNow: new Date(minuteNow).toTimeString(),
-    //   scheduleMinute: new Date(scheduleMinute).toTimeString()
-    // })
+    logger.info({
+      minuteNow: new Date(minuteNow).toTimeString(),
+      scheduleMinute: new Date(scheduleMinute).toTimeString()
+    })
 
     return scheduleMinute === minuteNow
   })
