@@ -1,7 +1,7 @@
 // firestore init /
 // connect to firestore /
 // schedule caching function /
-// schedule matcher function
+// schedule matcher function /
 // control data actor function
 
 import db from "admin.ts"
@@ -11,6 +11,7 @@ import express from "express"
 import type { CacheSchedules } from "types/express.js"
 import { pino } from "pino"
 import scheduleMatcher from "functions/matcher.ts"
+import setter from "functions/setter.ts"
 
 const port = 3000
 const logger = pino({
@@ -41,7 +42,12 @@ app.listen(port, async () => {
         logger.info("cache valid.")
       }
 
-      await scheduleMatcher(db, scheduleCache)
+      const matches = await scheduleMatcher(db, scheduleCache)
+      if (matches.length) {
+        logger.info(`matches: ${matches}`)
+
+        // setter()
+      }
     } catch (err) {
       logger.error(err)
     }
