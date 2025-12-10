@@ -13,10 +13,8 @@ export default async function setter(
     try {
       const snap = await update.docRef.get()
       const data = snap.data() as DeviceControlData
-      const newControlData = data
+      const newControlData = structuredClone(data)
       newControlData.control_values[0] = update.value.toString()
-
-      await update.docRef.update(newControlData)
 
       const newLog: Log = {
         deviceId: Number.parseInt(data.device_id),
@@ -28,6 +26,12 @@ export default async function setter(
         userId: "SYSTEM",
         username: "SYSTEM"
       }
+
+      await update.docRef.update(newControlData)
+      logger.info(
+        `updated ${data.device_id}'s value from ${data.control_values[0]} to ${newControlData.control_values[0]}`
+      )
+
       await logCollection.add(newLog)
     } catch (err) {
       logger.error(err)
