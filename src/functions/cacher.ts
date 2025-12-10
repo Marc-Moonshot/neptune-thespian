@@ -1,5 +1,4 @@
 import type { Firestore } from "firebase-admin/firestore"
-import { type Logger } from "pino"
 import type { CacheSchedules, Schedule } from "types/express.js"
 import logger from "logger.ts"
 
