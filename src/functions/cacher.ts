@@ -1,6 +1,6 @@
 import type { Firestore } from "firebase-admin/firestore"
-import type { CacheSchedules, Schedule } from "types/express.js"
-import logger from "logger.ts"
+import type { CacheSchedules, Schedule } from "../types/express.js"
+import logger from "../logger.js"
 
 // caches data in passed variable and returns it.
 export default async function scheduleCacher(

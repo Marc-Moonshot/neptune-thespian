@@ -4,15 +4,14 @@
 // schedule matcher function /
 // control data actor function
 
-import db from "admin.ts"
-import scheduleCacher from "functions/cacher.ts"
+import db from "./admin.js"
+import scheduleCacher from "./functions/cacher.js"
 import cors from "cors"
 import express from "express"
-import type { CacheSchedules } from "types/express.js"
-import { pino } from "pino"
-import scheduleMatcher from "functions/matcher.ts"
-import setter from "functions/setter.ts"
-import logger from "logger.ts"
+import type { CacheSchedules } from "./types/express.js"
+import scheduleMatcher from "./functions/matcher.js"
+import setter from "./functions/setter.js"
+import logger from "./logger.js"
 
 const port = 3000
 

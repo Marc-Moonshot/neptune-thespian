@@ -1,6 +1,6 @@
 import type { DocumentReference, Firestore } from "firebase-admin/firestore"
-import logger from "logger.ts"
-import type { DeviceControlData, Log } from "types/express.js"
+import logger from "../logger.js"
+import type { DeviceControlData, Log } from "../types/express.js"
 
 // sets the DeviceControlData document's control_value field to the parameter passed.
 // must create entry in logs collection by "SYSTEM"
