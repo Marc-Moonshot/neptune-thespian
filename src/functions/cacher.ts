@@ -1,17 +1,7 @@
 import type { Firestore } from "firebase-admin/firestore"
-import { pino } from "pino"
+import { type Logger } from "pino"
 import type { CacheSchedules, Schedule } from "types/express.js"
-
-const logger = pino({
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-      translateTime: "HH:MM:ss",
-      ignore: "pid,hostname"
-    }
-  }
-})
+import logger from "logger.ts"
 
 // caches data in passed variable and returns it.
 export default async function scheduleCacher(

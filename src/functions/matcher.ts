@@ -1,22 +1,6 @@
 import type { DocumentReference, Firestore } from "firebase-admin/firestore"
-import { pino } from "pino"
 import type { CacheSchedules, DeviceControlData } from "types/express.js"
-
-const logger = pino({
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-      translateTime: "HH:MM:ss",
-      ignore: "pid,hostname"
-    }
-  }
-})
-
-export type pendingUpdate = {
-  value: number
-  docRef: DocumentReference
-}
+import logger from "logger.ts"
 
 // checks if a schedule has not been reflected in a device's control_data and returns them. (to be consumed by setter())
 export default async function scheduleMatcher(
@@ -75,35 +59,6 @@ export default async function scheduleMatcher(
   const results = await Promise.all(promises)
   return results.flat()
 }
-
-// for (const schedule of scheduleCache.schedules) {
-//   try {
-//     const controlDataSnap = await collection
-//       .where("device_id", "==", schedule.device_id)
-//       .get()
-
-//     if (controlDataSnap.empty) {
-//       logger.warn(`no control data document found for ${schedule.device_id}.`)
-//       continue
-//     }
-
-//     const scheduleMinute = Math.floor(schedule.time / 60_000) * 60_000 // round value down to the minute
-//     const minuteNow = Math.floor(Date.now() / 60_000) * 60_000
-
-//     if (scheduleMinute === minuteNow) {
-//       for (const doc of controlDataSnap.docs) {
-//         const data = doc.data() as DeviceControlData
-
-//         if (schedule.value.toString() !== data.control_values[0]) {
-//           docsToBeUpdated.push({ value: schedule.value, docRef: doc.ref })
-//         }
-//       }
-//     }
-//   } catch (err) {
-//     logger.error(err)
-//   }
-// }
-// return docsToBeUpdated
 
 // for (const doc of controlDataSnap.docs) {
 //   const data = doc.data() as DeviceControlData

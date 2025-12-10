@@ -12,18 +12,9 @@ import type { CacheSchedules } from "types/express.js"
 import { pino } from "pino"
 import scheduleMatcher from "functions/matcher.ts"
 import setter from "functions/setter.ts"
+import logger from "logger.ts"
 
 const port = 3000
-const logger = pino({
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-      translateTime: "HH:MM:ss",
-      ignore: "pid,hostname"
-    }
-  }
-})
 
 const app = express()
 app.use(express.json())
@@ -46,7 +37,7 @@ app.listen(port, async () => {
       if (matches.length) {
         logger.info(`matches: ${matches}`)
 
-        // setter()
+        await setter(db, matches)
       }
     } catch (err) {
       logger.error(err)
