@@ -28,6 +28,7 @@ app.listen(port, async () => {
     try {
       if (scheduleCache.expiry < Date.now()) {
         logger.warn("cache expired.")
+        scheduleCache.schedules = []
         await scheduleCacher(db, scheduleCache)
       } else {
         logger.info("cache valid.")
@@ -46,7 +47,7 @@ app.listen(port, async () => {
   }
 
   await runSchedules()
-  const callback = setInterval(runSchedules, 5000)
+  const callback = setInterval(runSchedules, 60000)
 
   // cleanup
   process.on("SIGINT", () => {
