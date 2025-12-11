@@ -9,14 +9,25 @@ export default async function scheduleMatcher(
 ) {
   const collection = db.collection("control_data")
 
+  const TIMEZONE_OFFSET_MS = 8 * 60 * 60 * 1000
+
+  const now = new Date(Date.now() + TIMEZONE_OFFSET_MS)
+  const startOfDay = new Date(now.setHours(0, 0, 0, 0))
+
   const matchingSchedulesNow = scheduleCache.schedules.filter((schedule) => {
-    const scheduleMs = new Date().setHours(0, 0, 0, 0) + schedule.time * 60_000
+    const scheduleMs = startOfDay.getTime() + schedule.time * 60_000
     const scheduleMinute = Math.floor(scheduleMs / 60_000) * 60_000
-    const minuteNow = Math.floor(Date.now() / 60_000) * 60_000
+
+    const minuteNow =
+      Math.floor((Date.now() + TIMEZONE_OFFSET_MS) / 60_000) * 60_000
 
     logger.info({
-      minuteNow: new Date(minuteNow).toTimeString(),
-      scheduleMinute: new Date(scheduleMinute).toTimeString()
+      minuteNow: new Date(minuteNow).toLocaleTimeString("en-PH", {
+        timeZone: "Asia/Manila"
+      }),
+      scheduleMinute: new Date(scheduleMinute).toLocaleTimeString("en-PH", {
+        timeZone: "Asia/Manila"
+      })
     })
 
     return scheduleMinute === minuteNow
