@@ -16,9 +16,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# fix this, do not copy to runtime
-COPY secrets/ ./secrets/
-
 RUN npm ci --omit=dev
 
 COPY --from=build /dist ./dist

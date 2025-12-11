@@ -1,0 +1,12 @@
+services:
+  thespian:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    secrets:
+      - firebase_admin
+    env_file:
+      - .env
+secrets:
+  firebase_admin:
+    file: ./secrets/admin.json
