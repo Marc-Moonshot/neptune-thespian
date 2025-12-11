@@ -9,25 +9,25 @@ export default async function scheduleMatcher(
 ) {
   const collection = db.collection("control_data")
 
-  const TIMEZONE_OFFSET_MS = 8 * 60 * 60 * 1000
-
-  const now = new Date(Date.now() + TIMEZONE_OFFSET_MS)
-  const startOfDay = new Date(now.setHours(0, 0, 0, 0))
-
   const matchingSchedulesNow = scheduleCache.schedules.filter((schedule) => {
-    const scheduleMs = startOfDay.getTime() + schedule.time * 60_000
+    // Get current time in PH timezone
+    const nowInPH = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" })
+    )
+
+    // Get today's date at midnight in PH timezone
+    const todayPH = new Date(nowInPH.toDateString())
+
+    // Calculate schedule time in PH timezone (midnight + schedule.time minutes)
+    const scheduleMs = todayPH.getTime() + schedule.time * 60_000
     const scheduleMinute = Math.floor(scheduleMs / 60_000) * 60_000
 
-    const minuteNow =
-      Math.floor((Date.now() + TIMEZONE_OFFSET_MS) / 60_000) * 60_000
+    // Get current minute in PH timezone
+    const minuteNow = Math.floor(nowInPH.getTime() / 60_000) * 60_000
 
     logger.info({
-      minuteNow: new Date(minuteNow).toLocaleTimeString("en-PH", {
-        timeZone: "Asia/Manila"
-      }),
-      scheduleMinute: new Date(scheduleMinute).toLocaleTimeString("en-PH", {
-        timeZone: "Asia/Manila"
-      })
+      minuteNow: new Date(minuteNow).toTimeString(),
+      scheduleMinute: new Date(scheduleMinute).toTimeString()
     })
 
     return scheduleMinute === minuteNow
