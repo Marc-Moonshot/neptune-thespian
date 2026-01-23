@@ -1,6 +1,8 @@
 export type Schedule = {
   time: number
   value: number
+  controlMode?: "AUTO" | "MANUAL"
+  controlOn?: boolean
   created_at: number
   created_by_email: string
   created_by_id: string
