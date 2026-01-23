@@ -17,6 +17,20 @@ export type DeviceControlData = {
   status: string
 }
 
+type Device = {
+  id: string
+  device_number: number
+  nickname: string
+  last_status: "OK" | "ERROR" | "DISABLED"
+  last_contact: number
+  date_registered: number
+  rtu_assigned: number
+  device_type: string
+  device_code: string
+  live?: boolean
+  units?: string[]
+}
+
 export type CacheSchedules = {
   expiry: number
   schedules: Schedule[]
