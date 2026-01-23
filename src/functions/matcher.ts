@@ -53,11 +53,48 @@ export default async function scheduleMatcher(
       }
 
       const updates = []
+
       for (const doc of controlDataSnap.docs) {
         const data = doc.data() as DeviceControlData
+        const updatesForDoc: any = {
+          docRef: doc.ref
+        }
+
+        let hasChanges = false
+
+        // if dosing pump, control_value[1] should be set to value
+        // otherwise control_value[0] should be used
         if (schedule.value.toString() !== data.control_values[0]) {
-          logger.info(`control value for ${data.device_id} is out of sync.`)
-          updates.push({ value: schedule.value, docRef: doc.ref })
+          updatesForDoc.value = schedule.value
+          hasChanges = true
+        }
+
+        if (
+          schedule.controlMode !== undefined &&
+          schedule.controlMode.toString() !== data.control_values[1]
+        ) {
+          updatesForDoc.mode = schedule.controlMode.toString()
+          hasChanges = true
+        }
+
+        if (data.control_values[2]) {
+          const control_value_on =
+            parseInt(data.control_values[2]) === 0 ? false : true
+
+          if (
+            schedule.controlOn !== undefined &&
+            schedule.controlOn !== control_value_on
+          ) {
+            updatesForDoc.on = schedule.controlOn
+            hasChanges = true
+          }
+        }
+
+        if (hasChanges) {
+          logger.info(
+            `Device ${data.device_id} is out of sync. Queueing updates.`
+          )
+          updates.push(updatesForDoc)
         }
       }
 
