@@ -27,7 +27,7 @@ type Device = {
   last_contact: number
   date_registered: number
   rtu_assigned: number
-  device_type: string
+  device_type: "DOSING_PUMP" | "VALVE" | "RELAY"
   device_code: string
   live?: boolean
   units?: string[]

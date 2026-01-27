@@ -1,5 +1,9 @@
 import type { Firestore } from "firebase-admin/firestore"
-import type { CacheSchedules, DeviceControlData } from "../types/express.js"
+import type {
+  CacheSchedules,
+  Device,
+  DeviceControlData
+} from "../types/express.js"
 import logger from "../logger.js"
 
 // checks if a schedule has not been reflected in a device's control_data and returns them. (to be consumed by setter())
@@ -30,7 +34,7 @@ export default async function scheduleMatcher(
       scheduleMinute: new Date(scheduleMinute).toTimeString()
     })
 
-    return scheduleMinute === minuteNow
+    return Math.abs(scheduleMinute - minuteNow) < 30_000 // tolerance
   })
 
   if (matchingSchedulesNow.length == 0) {
@@ -62,30 +66,43 @@ export default async function scheduleMatcher(
 
         let hasChanges = false
 
+        const ioDevices = await db
+          .collection("io_devices")
+          .where("device_number", "==", data.device_id)
+          .get()
+
+        const ioDevice = ioDevices.docs[0]?.data() as Device
+
         // if dosing pump, control_value[1] should be set to value
         // otherwise control_value[0] should be used
-        if (schedule.value.toString() !== data.control_values[0]) {
-          updatesForDoc.value = schedule.value
-          hasChanges = true
-        }
-
-        if (
-          schedule.controlMode !== undefined &&
-          schedule.controlMode.toString() !== data.control_values[1]
-        ) {
-          updatesForDoc.mode = schedule.controlMode.toString()
-          hasChanges = true
-        }
-
-        if (data.control_values[2]) {
-          const control_value_on =
-            parseInt(data.control_values[2]) === 0 ? false : true
-
+        if (ioDevice.device_type === "DOSING_PUMP") {
+          if (schedule.value.toString() !== data.control_values[1]) {
+            updatesForDoc.value = schedule.value
+            hasChanges = true
+          }
           if (
-            schedule.controlOn !== undefined &&
-            schedule.controlOn !== control_value_on
+            schedule.controlMode !== undefined &&
+            schedule.controlMode.toString() !== data.control_values[1]
           ) {
-            updatesForDoc.on = schedule.controlOn
+            updatesForDoc.mode = schedule.controlMode.toString()
+            hasChanges = true
+          }
+
+          if (data.control_values[2]) {
+            const control_value_on =
+              parseInt(data.control_values[2]) === 0 ? false : true
+
+            if (
+              schedule.controlOn !== undefined &&
+              schedule.controlOn !== control_value_on
+            ) {
+              updatesForDoc.on = schedule.controlOn
+              hasChanges = true
+            }
+          }
+        } else {
+          if (schedule.value.toString() !== data.control_values[0]) {
+            updatesForDoc.value = schedule.value
             hasChanges = true
           }
         }
