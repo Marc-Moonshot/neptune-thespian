@@ -79,38 +79,49 @@ export default async function scheduleMatcher(
           if (schedule.value.toString() !== data.control_values[1]) {
             updatesForDoc.value = schedule.value
             hasChanges = true
+            logger.info(
+              `Device ${data.device_id}'s value field is out of sync. Queueing updates.`
+            )
           }
           if (
             schedule.controlMode !== undefined &&
-            schedule.controlMode.toString() !== data.control_values[1]
+            schedule.controlMode.toString() !== data.control_values[0]
           ) {
             updatesForDoc.mode = schedule.controlMode.toString()
             hasChanges = true
+            logger.info(
+              `Device ${data.device_id}'s mode field is out of sync. Queueing updates.`
+            )
           }
 
           if (data.control_values[2]) {
             const control_value_on =
               parseInt(data.control_values[2]) === 0 ? false : true
 
+            logger.info(`control_value_on: ${control_value_on}`)
+            logger.info(`schedule.controlOn: ${schedule.controlOn}`)
             if (
               schedule.controlOn !== undefined &&
               schedule.controlOn !== control_value_on
             ) {
-              updatesForDoc.on = schedule.controlOn
+              updatesForDoc.on = schedule.controlOn === false ? 0 : 1
               hasChanges = true
+              logger.info(
+                `Device ${data.device_id}'s on field is out of sync. Queueing updates.`
+              )
             }
           }
         } else {
           if (schedule.value.toString() !== data.control_values[0]) {
             updatesForDoc.value = schedule.value
             hasChanges = true
+            logger.info(
+              `Device ${data.device_id}'s value field is out of sync. Queueing updates.`
+            )
           }
         }
 
         if (hasChanges) {
-          logger.info(
-            `Device ${data.device_id} is out of sync. Queueing updates.`
-          )
           updates.push(updatesForDoc)
         }
       }
@@ -124,24 +135,3 @@ export default async function scheduleMatcher(
   const results = await Promise.all(promises)
   return results.flat()
 }
-
-// for (const doc of controlDataSnap.docs) {
-//   const data = doc.data() as DeviceControlData
-//   if (schedule.value.toString() !== data.control_values[0]) {
-//     const newControlValue = [
-//       schedule.value.toString(),
-//       data.control_values[1] ?? "0",
-//       data.control_values[2] ?? "0"
-//     ]
-//     await doc.ref.update({ control_values: newControlValue })
-
-//     logger.info(
-//       {
-//         device_id: schedule.device_id,
-//         old_values: data.control_values,
-//         new_values: newControlValue
-//       },
-//       "Updated control values"
-//     )
-//   }
-// }
