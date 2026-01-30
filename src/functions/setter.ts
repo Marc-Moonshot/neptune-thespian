@@ -106,13 +106,13 @@ const createLogs = ({
   const logs: Log[] = []
   switch (deviceType) {
     case "DOSING_PUMP": {
-      if (update.mode)
+      if (update.mode != undefined)
         logs.push({
           deviceId: Number.parseInt(data.device_id),
           date: Date.now(),
           field: "control_mode",
           lastValue: data.control_values[0]!,
-          setValue: newControlData.control_values[0],
+          setValue: newControlData.control_values[0]!,
           userEmail: "SYSTEM",
           userId: "SYSTEM",
           username: "SYSTEM"
@@ -123,19 +123,19 @@ const createLogs = ({
           date: Date.now(),
           field: "control_value",
           lastValue: data.control_values[1]!,
-          setValue: newControlData.control_values[1],
+          setValue: newControlData.control_values[1]!,
           userEmail: "SYSTEM",
           userId: "SYSTEM",
           username: "SYSTEM"
         })
 
-      if (update.on)
+      if (update.on != undefined)
         logs.push({
           deviceId: Number.parseInt(data.device_id),
           date: Date.now(),
           field: "control_on",
           lastValue: data.control_values[2]!,
-          setValue: newControlData.control_values[2],
+          setValue: newControlData.control_values[2]!,
           userEmail: "SYSTEM",
           userId: "SYSTEM",
           username: "SYSTEM"
