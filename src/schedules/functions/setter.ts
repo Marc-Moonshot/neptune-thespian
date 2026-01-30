@@ -1,6 +1,6 @@
 import type { DocumentReference, Firestore } from "firebase-admin/firestore"
-import logger from "../logger.js"
-import type { Device, DeviceControlData, Log } from "../types/express.js"
+import logger from "../../logger.js"
+import type { Device, DeviceControlData, Log } from "../../types/express.js"
 
 // sets the DeviceControlData document's fields to the parameter passed.
 // must create entry in logs collection by "SYSTEM"
@@ -117,7 +117,7 @@ const createLogs = ({
           userId: "SYSTEM",
           username: "SYSTEM"
         })
-      if (update.value)
+      if (update.value != undefined)
         logs.push({
           deviceId: Number.parseInt(data.device_id),
           date: Date.now(),

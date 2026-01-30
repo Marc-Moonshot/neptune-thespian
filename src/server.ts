@@ -5,12 +5,12 @@
 // control data actor function /
 
 import db from "./admin.js"
-import scheduleCacher from "./functions/cacher.js"
+import scheduleCacher from "./schedules/functions/cacher.js"
 import cors from "cors"
 import express from "express"
 import type { CacheSchedules } from "./types/express.js"
-import scheduleMatcher from "./functions/matcher.js"
-import setter from "./functions/setter.js"
+import scheduleMatcher from "./schedules/functions/matcher.js"
+import setter from "./schedules/functions/setter.js"
 import logger from "./logger.js"
 
 const port = 3000

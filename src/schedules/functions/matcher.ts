@@ -3,8 +3,8 @@ import type {
   CacheSchedules,
   Device,
   DeviceControlData
-} from "../types/express.js"
-import logger from "../logger.js"
+} from "../../types/express.js"
+import logger from "../../logger.js"
 
 // checks if a schedule has not been reflected in a device's control_data and returns them. (to be consumed by setter())
 export default async function scheduleMatcher(
