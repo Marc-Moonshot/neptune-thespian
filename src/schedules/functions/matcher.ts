@@ -1,18 +1,15 @@
-import type { Firestore } from "firebase-admin/firestore"
 import type {
   CacheSchedules,
-  Device,
-  DeviceControlData
+  DatabaseAdapter,
+  Device
 } from "../../types/express.js"
 import logger from "../../logger.js"
 
 // checks if a schedule has not been reflected in a device's control_data and returns them. (to be consumed by setter())
 export default async function scheduleMatcher(
-  db: Firestore,
+  adapter: DatabaseAdapter,
   scheduleCache: CacheSchedules
 ) {
-  const collection = db.collection("control_data")
-
   const matchingSchedulesNow = scheduleCache.schedules.filter((schedule) => {
     // Get current time in PH timezone
     const nowInPH = new Date(
@@ -47,31 +44,20 @@ export default async function scheduleMatcher(
 
   const promises = matchingSchedulesNow.map(async (schedule) => {
     try {
-      const controlDataSnap = await collection
-        .where("device_id", "==", schedule.device_id)
-        .get()
-
-      if (controlDataSnap.empty) {
-        logger.warn(`no control data document found for ${schedule.device_id}.`)
-        return []
-      }
+      const controlData = await adapter.getControlDataByDeviceId(
+        schedule.device_id
+      )
 
       const updates = []
 
-      for (const doc of controlDataSnap.docs) {
-        const data = doc.data() as DeviceControlData
+      for (const data of controlData) {
         const updatesForDoc: any = {
-          docRef: doc.ref
+          deviceId: data.device_id
         }
 
         let hasChanges = false
 
-        const ioDevices = await db
-          .collection("io_devices")
-          .where("device_number", "==", data.device_id)
-          .get()
-
-        const ioDevice = ioDevices.docs[0]?.data() as Device
+        const ioDevice = await adapter.getIoDeviceById(data.device_id)
 
         // if dosing pump, control_value[1] should be set to value
         // otherwise control_value[0] should be used

@@ -1,38 +1,37 @@
-import type { DocumentReference, Firestore } from "firebase-admin/firestore"
 import logger from "../../logger.js"
 import type {
   DatabaseAdapter,
-  Device,
   DeviceControlData,
   Log
 } from "../../types/express.js"
-import { createFirestoreAdapter } from "../../db/FirestoreAdapter.js"
 
 export default async function setter(
-  db: Firestore,
+  adapter: DatabaseAdapter,
   updates: {
     value: number
-    docRef: DocumentReference
+    deviceId: number
     mode: string | undefined
     on: 0 | 1 | undefined
   }[]
 ) {
-  await db.runTransaction(async (transaction) => {
+  await adapter.runTransaction(async (transaction) => {
     for (const update of updates) {
       try {
-        const snap = await transaction.get(update.docRef)
-        const data = snap.data() as DeviceControlData
+        const deviceQuery = await adapter.getControlDataByDeviceId(
+          update.deviceId
+        )
+
+        if (deviceQuery[0] === undefined)
+          throw new Error(`device ${update.deviceId} does not exist.`)
+
+        const data = deviceQuery[0]
+
         const defaultControlValue = data.control_values[0] // most devices use index 0 for value
         const pumpControlValue = data.control_values[1] // dosing pumps use index 1
-        const pumpModeValue = data.control_values[0] // dosing pump devices have the mode field in index 0
+        const pumpModeValue = data.control_values[0] // dosing pump devices have the mode field at index 0
         const pumpOnValue = data.control_values[2]
 
-        const ioDevices = await db
-          .collection("io_devices")
-          .where("device_number", "==", data.device_id)
-          .get()
-
-        const ioDevice = ioDevices.docs[0]?.data() as Device
+        const ioDevice = await adapter.getIoDeviceById(data.device_id)
 
         const deviceType = ioDevice.device_type
 
@@ -69,9 +68,9 @@ export default async function setter(
           )
         }
 
-        transaction.update(update.docRef, newControlData)
+        const docRef = await adapter.getControlDataDocRef(update.deviceId)
 
-        const logCollection = db.collection("logs")
+        transaction.update(docRef, newControlData)
 
         logger.info(newControlData)
         const logs: Log[] = createLogs({
@@ -81,9 +80,7 @@ export default async function setter(
           update: update
         })
 
-        transaction.update(update.docRef, newControlData)
-
-        await Promise.all(logs.map((log) => logCollection.add(log)))
+        await adapter.addLogs(logs)
       } catch (err) {
         logger.error(err)
       }
@@ -103,10 +100,7 @@ const createLogs = ({
   data: DeviceControlData
   update: {
     value: number
-    docRef: DocumentReference<
-      FirebaseFirestore.DocumentData,
-      FirebaseFirestore.DocumentData
-    >
+    deviceId: number
     mode: string | undefined
     on: 0 | 1 | undefined
   }
@@ -116,7 +110,7 @@ const createLogs = ({
     case "DOSING_PUMP": {
       if (update.mode != undefined)
         logs.push({
-          deviceId: Number.parseInt(data.device_id),
+          deviceId: data.device_id,
           date: Date.now(),
           field: "control_mode",
           lastValue: data.control_values[0]!,
@@ -127,7 +121,7 @@ const createLogs = ({
         })
       if (update.value != undefined)
         logs.push({
-          deviceId: Number.parseInt(data.device_id),
+          deviceId: data.device_id,
           date: Date.now(),
           field: "control_value",
           lastValue: data.control_values[1]!,
@@ -139,7 +133,7 @@ const createLogs = ({
 
       if (update.on != undefined)
         logs.push({
-          deviceId: Number.parseInt(data.device_id),
+          deviceId: data.device_id,
           date: Date.now(),
           field: "control_on",
           lastValue: data.control_values[2]!,
@@ -154,7 +148,7 @@ const createLogs = ({
     default: {
       if (newControlData.control_values[0])
         logs.push({
-          deviceId: Number.parseInt(data.device_id),
+          deviceId: data.device_id,
           date: Date.now(),
           field: "control_value",
           lastValue: data.control_values[0]!,

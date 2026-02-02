@@ -1,3 +1,5 @@
+import type { DocumentReference } from "firebase-admin/firestore"
+
 export type Schedule = {
   time: number
   value: number
@@ -13,7 +15,7 @@ export type Schedule = {
 export type DeviceControlData = {
   control_values: string[]
   current_values: string[]
-  device_id: string
+  device_id: number
   last_contact: string
   live: boolean
   status: string
@@ -51,9 +53,10 @@ type Log = {
 
 type DatabaseAdapter = {
   getAllSchedules(): Promise<Schedule[]>
-  getControlDataByDeviceId(deviceId: string): Promise<DeviceControlData[]>
-  getIoDeviceById(deviceId: string): Promise<Device | undefined>
+  getControlDataByDeviceId(deviceId: number): Promise<DeviceControlData[]>
+  getIoDeviceById(deviceId: number): Promise<Device>
   addLogs(logs: Log[]): Promise<void>
+  getControlDataDocRef(deviceId: number): Promise<DocumentReference>
   runTransaction<T>(
     callback: (ctx: transactionContext) => Promise<T>
   ): Promise<T>

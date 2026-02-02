@@ -12,6 +12,7 @@ import type { CacheSchedules } from "./types/express.js"
 import scheduleMatcher from "./schedules/functions/matcher.js"
 import setter from "./schedules/functions/setter.js"
 import logger from "./logger.js"
+import { createFirestoreAdapter } from "./db/FirestoreAdapter.js"
 
 const port = 3000
 
@@ -21,23 +22,24 @@ app.use(cors())
 
 logger.info(`Thespian running on port ${port}`)
 let scheduleCache: CacheSchedules = { expiry: 0, schedules: [] }
+const adapter = createFirestoreAdapter(db)
 
 const runSchedules = async () => {
   try {
     if (scheduleCache.expiry < Date.now()) {
       logger.warn("cache expired.")
       scheduleCache.schedules = []
-      await scheduleCacher(db, scheduleCache)
+      await scheduleCacher(adapter, scheduleCache)
     } else {
       logger.info("cache valid.")
     }
 
-    const matches = await scheduleMatcher(db, scheduleCache)
+    const matches = await scheduleMatcher(adapter, scheduleCache)
     if (matches.length) {
-      console.log(`matches: `)
+      logger.info(`matches: `)
       matches.forEach((match) => logger.info(match))
 
-      await setter(db, matches)
+      await setter(adapter, matches)
     }
   } catch (err) {
     logger.error(err)

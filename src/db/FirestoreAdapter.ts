@@ -16,20 +16,28 @@ import type {
 export function createFirestoreAdapter(db: Firestore): DatabaseAdapter {
   const getAllSchedules = async (): Promise<Schedule[]> => {
     const snap = await db.collection("schedules").get()
+
+    if (snap.empty) {
+      throw new Error("'schedules' Collection Empty.")
+    }
+
     return snap.docs.map((doc) => doc.data() as Schedule)
   }
   const getControlDataByDeviceId = async (
-    deviceId: string
+    deviceId: number
   ): Promise<DeviceControlData[]> => {
     const controlDataSnap = await db
       .collection("control_data")
       .where("device_id", "==", deviceId)
       .get()
 
+    if (controlDataSnap.empty)
+      throw new Error(`no control data for device ${deviceId}`)
+
     return controlDataSnap.docs.map((doc) => doc.data() as DeviceControlData)
   }
 
-  const getIoDeviceById = async (deviceId: string): Promise<Device> => {
+  const getIoDeviceById = async (deviceId: number): Promise<Device> => {
     const ioDevices = await db
       .collection("io_devices")
       .where("device_number", "==", deviceId)
@@ -48,6 +56,16 @@ export function createFirestoreAdapter(db: Firestore): DatabaseAdapter {
     })
 
     await batch.commit()
+  }
+  const getControlDataDocRef = async (
+    docId: number
+  ): Promise<DocumentReference> => {
+    const snap = await db
+      .collection("control_data")
+      .where("device_id", "==", docId)
+      .get()
+    if (snap.docs[0] === undefined) throw new Error("no control data found.")
+    return snap.docs[0].ref
   }
 
   async function runTransaction<T>(
@@ -72,6 +90,7 @@ export function createFirestoreAdapter(db: Firestore): DatabaseAdapter {
     getControlDataByDeviceId,
     getIoDeviceById,
     addLogs,
+    getControlDataDocRef,
     runTransaction
   }
 }
