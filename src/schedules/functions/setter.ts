@@ -1,9 +1,13 @@
 import type { DocumentReference, Firestore } from "firebase-admin/firestore"
 import logger from "../../logger.js"
-import type { Device, DeviceControlData, Log } from "../../types/express.js"
+import type {
+  DatabaseAdapter,
+  Device,
+  DeviceControlData,
+  Log
+} from "../../types/express.js"
+import { createFirestoreAdapter } from "../../db/FirestoreAdapter.js"
 
-// sets the DeviceControlData document's fields to the parameter passed.
-// must create entry in logs collection by "SYSTEM"
 export default async function setter(
   db: Firestore,
   updates: {
@@ -18,6 +22,10 @@ export default async function setter(
       try {
         const snap = await transaction.get(update.docRef)
         const data = snap.data() as DeviceControlData
+        const defaultControlValue = data.control_values[0] // most devices use index 0 for value
+        const pumpControlValue = data.control_values[1] // dosing pumps use index 1
+        const pumpModeValue = data.control_values[0] // dosing pump devices have the mode field in index 0
+        const pumpOnValue = data.control_values[2]
 
         const ioDevices = await db
           .collection("io_devices")
@@ -35,29 +43,29 @@ export default async function setter(
         // TODO: please for the love of god rewrite this sometime soon
         if (deviceType === "DOSING_PUMP") {
           if (update.value != undefined) {
-            newControlData.control_values[1] = update.value.toString() // dosing pumps use index 1 for value
+            newControlData.control_values[1] = update.value.toString()
             logger.info(
-              `updated ${data.device_id}'s value field from ${data.control_values[1]} to ${newControlData.control_values[1]}`
+              `updated ${data.device_id}'s value field from ${pumpControlValue} to ${newControlData.control_values[1]}`
             )
           }
         } else {
-          newControlData.control_values[0] = update.value.toString() // other devices use index 0
+          newControlData.control_values[0] = update.value.toString()
           logger.info(
-            `updated ${data.device_id}'s value field from ${data.control_values[0]} to ${newControlData.control_values[0]}`
+            `updated ${data.device_id}'s value field from ${defaultControlValue} to ${newControlData.control_values[0]}`
           )
         }
 
         if (update.mode != undefined) {
-          newControlData.control_values[0] = update.mode.toString() // dosing pump devices have the mode field in index 0
+          newControlData.control_values[0] = update.mode.toString()
           logger.info(
-            `updated ${data.device_id}'s mode field from ${data.control_values[0]} to ${newControlData.control_values[0]}`
+            `updated ${data.device_id}'s mode field from ${pumpModeValue} to ${newControlData.control_values[0]}`
           )
         }
         if (update.on != undefined) {
           newControlData.control_values[2] = update.on.toString()
 
           logger.info(
-            `updated ${data.device_id}'s on field from ${data.control_values[2]} to ${newControlData.control_values[2]}`
+            `updated ${data.device_id}'s on field from ${pumpOnValue} to ${newControlData.control_values[2]}`
           )
         }
 
@@ -83,7 +91,7 @@ export default async function setter(
   })
 }
 
-// creates logs and returns them
+// creates logs for the changes that have been made by the service
 const createLogs = ({
   deviceType,
   newControlData,
