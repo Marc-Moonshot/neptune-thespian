@@ -48,3 +48,18 @@ type Log = {
   userEmail: string
   userId: string
 }
+
+type DatabaseAdapter = {
+  getAllSchedules(): Promise<Schedule[]>
+  getControlDataByDeviceId(deviceId: string): Promise<DeviceControlData[]>
+  getIoDeviceById(deviceId: string): Promise<Device | undefined>
+  addLogs(logs: Log[]): Promise<void>
+  runTransaction<T>(
+    callback: (ctx: transactionContext) => Promise<T>
+  ): Promise<T>
+}
+
+type transactionContext = {
+  get<T>(ref: any): Promise<T | null>
+  update(ref: any, data: any): Promise<void>
+}
