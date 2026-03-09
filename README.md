@@ -27,6 +27,7 @@ Neptune Thespian is a TypeScript-based service designed to handle the orchestrat
 ```bash
 git clone https://github.com/Marc-Moonshot/neptune-thespian.git
 cd neptune-thespian
+```
 2. Install deps:
 ```bash
 npm install
